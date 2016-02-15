@@ -9,21 +9,18 @@ docker::run { 'redis1':
   dns          	=> ['8.8.8.8', '8.8.4.4'],
 }
 
-docker::run { 'logstash-fr':
-  image		=> 'logstash',
-  dns		=> ['8.8.8.8', '8.8.4.4'],
-  volumes       => ['/root/4x/logst-fr:/config-dir'],
-  tty           => true,
-  command 	=> '-f /config-dir/logstash.conf',
-  links		=> ['redis1:redis'],
-  depends         => [ 'redis1' ],
-}
-
 docker::run { 'logstash-back':
   image         => 'logstash',
   dns           => ['8.8.8.8', '8.8.4.4'],
   volumes       => ['/root/4x/logst-back:/config-dir'],
   tty           => true,
+  links		=> ['redis1:redis', 'rabbit1:rabbitmq'],
   command       => '-f /config-dir/logstash.conf',
-  depends         => [ 'redis1' ],
+  depends         => [ 'redis1', 'rabbit1' ],
+}
+
+docker::run { 'rabbit1':
+  image		=> 'rabbitmq',
+  dns           => ['8.8.8.8', '8.8.4.4'],
+  hostname        => 'rabbit1',
 }
