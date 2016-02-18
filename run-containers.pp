@@ -1,4 +1,5 @@
 ## install and configure redis
+
 include 'docker'
 docker::image { 'redis': }
 docker::image { 'logstash':}
