@@ -1,27 +1,22 @@
 ## install and configure redis
 
 include 'docker'
-docker::image { 'redis': }
-docker::image { 'logstash':}
 docker::image { 'rabbitmq':}
+docker::image { 'kingsquare/tunnel':}
 
-docker::run { 'redis1':
-  image        	=> 'redis',
-  dns          	=> ['8.8.8.8', '8.8.4.4'],
-}
-
-docker::run { 'logstash-back':
-  image         => 'logstash',
-  dns           => ['8.8.8.8', '8.8.4.4'],
-  volumes       => ['/root/4x/logst-back:/config-dir'],
-  tty           => true,
-  links		=> ['redis1:redis', 'rabbit1:rabbitmq'],
-  command       => '-f /config-dir/logstash.conf',
-  depends         => [ 'redis1', 'rabbit1' ],
-}
-
-docker::run { 'rabbit1':
+#5672
+docker::run { 'rabbit':
   image		=> 'rabbitmq',
   dns           => ['8.8.8.8', '8.8.4.4'],
   hostname        => 'rabbit1',
 }
+
+docker::run { 'tunnel':
+  image		=> 'kingsquare/tunnel',
+  volumes	=> '$SSH_AUTH_SOCK:/ssh-agent',
+  # *:[$exposed_port]:[$destination]:[$destination_port] [$user@][$server]
+  tty		=> true,
+  command	=> '*.5672:127.0.0.1:5673 root@localhost',
+}
+
+
